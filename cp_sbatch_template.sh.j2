@@ -1,0 +1,106 @@
+#!/bin/bash
+
+#
+## This template and the script to combine the results (see the end of the file) are based 
+## on the example on https://portal.biohpc.swmed.edu/content/guides/cellprofiler-biohpc/
+#
+
+##SBATCH -p test
+#SBATCH --workdir={{ workdir }}
+#SBATCH --output={{ user }}_{{ run }}.out
+
+# Use {{ nnodes }} nodes total
+#SBATCH -N {{ nnodes }}
+
+#SBATCH --ntasks={{ ntasks }}
+
+# Time Limit of 2 hours
+#SBATCH -t 02:00:00
+
+# Memory request per core, maximum 256000MB / 28 ~ 9140MB
+#SBATCH --mem-per-cpu={{ mem_per_cpu }}  
+
+JAVA_OPTS='{{ java_opts }}'
+
+# CellProfiler creates lots of threads, raise our process limit
+# or batches may fail
+ulimit -u 4096
+
+# Load the cellprofiler module
+module use /proj/hajaalin/LMUModules/
+module load Miniconda2
+source activate cellprofiler-3.1.8
+
+batch_data="{{ cp_batchfile }}"
+outputroot="{{ outputroot }}"
+
+# dataset size: {{ nwells }} wells, {{ sites_per_well }} sites per well. 
+# {{ nwells }}x{{ sites_per_well }} = {{ nsites }}
+# number of batches: {{ nbatches }}, batch size: {{ batch_size }}
+# {{ nbatches }}x{{ batch_size }} = {{ nsites_sanity_check }}
+
+# ukko2 technical specs:
+# https://wiki.helsinki.fi/display/it4sci/Technical+Specifications
+# 256GB memory
+
+# We have 4 nodes * 56 cores
+# BUT we want to use only physical cores here for best speed 
+# So we have 4 nodes * 28 cores = 112 cores available
+
+# As a test we'll process 1000 image sets
+# Closest factor of 1000 to 112 threads is 100
+# So we will run 100 batches, so each will deal with 10 image sets
+
+# srun is used to distribute our cellprofiler batchs across the allocated nodes
+# we run each bask as a background task (& at end of command)
+# otherwise the script will wait for batches to complete 1 by 1 
+
+# Loop over i, which will be the first image set in the batch
+# With 10000 image sets, and 100 batches this is a sequence from
+# 1 to 991, in increments of 10
+# You need to change the values in the seq command below for different
+# project and batch sizes
+# for 96 wells with 9 sites -> 864 sets 
+
+batch_size={{ batch_size }}
+batch_last_start={{ batch_last_start }}
+for i in $(seq 1 ${batch_size} ${batch_last_start}); do
+#for i in $(seq 1 12 13); do
+
+    # First image of the batch is our $i
+    BATCH_START=$i
+    # Last image is $i + 9 (10 images inclusive)
+    # e.g. if first in batch is 21, last is 30 (10 images)
+    # Change the 9 to match your real batch size
+    #BATCH_END=$((i+9))
+    BATCH_END=$((i + ${batch_size} -1))
+
+    # Run CellProfiler for tha batch via srun
+    # Allocate 2 cpus per task because we want a physical core per process 
+    # and there are 2 logical cores per physical core
+    # Specify JVM heap size as otherwize fails due to out of RAM
+    # with large numbers of batches per node
+    # -p specifies our batch file
+    # -c disables the GUI
+    # -r runs the batch immediately
+    # -f first image set for this batch
+    # -l last image set for this batch
+    # -o output folder for this batch
+    cmd="srun --exclusive -N1 -n1 --threads-per-core=2 --cpus-per-task={{ cpus_per_task }} cellprofiler -p ${batch_data} -c -r -f ${BATCH_START} -l ${BATCH_END} -o ${outputroot}/batch_${i}_out"
+    echo ${cmd}
+    ${cmd} &
+done
+
+# When we get here we've started all the batches running
+# Now wait for all the batches we started to finish
+wait
+
+objects=({{ objects }})
+for i in "${objects[@]}"
+do
+    echo $i
+    # Take the header (first line) from the first batch
+    head -n1 ${outputroot}/batch_1_out/*_${i}.csv > ${outputroot}/Combined_${i}.csv
+    # Append all other lines except header from all files
+    tail -q -n+2 ${outputroot}/batch_*_out/*_${i}.csv >> ${outputroot}/Combined_${i}.csv
+done
