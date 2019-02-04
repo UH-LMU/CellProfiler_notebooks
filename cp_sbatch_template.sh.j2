@@ -5,9 +5,15 @@
 ## on the example on https://portal.biohpc.swmed.edu/content/guides/cellprofiler-biohpc/
 #
 
+# mail alert at start, end and abortion of execution
+#SBATCH --mail-type=ALL
+
+# send mail to this address
+#SBATCH --mail-user={{ email }}
+
 ##SBATCH -p test
 #SBATCH --workdir={{ workdir }}
-#SBATCH --output={{ user }}_{{ run }}.out
+#SBATCH --output={{ project }}_{{ run }}.out
 
 # Use {{ nnodes }} nodes total
 #SBATCH -N {{ nnodes }}
