@@ -40,7 +40,7 @@ source activate cellprofiler-3.1.8
 batch_data="{{ cp_batchfile }}"
 outputroot="{{ outputroot }}"
 resultsdir="{{ resultsdir }}"
-resultsprefix="{{ project }}_{{ run }}"
+resultsprefix="{{ resultsprefix }}"
 
 # dataset size: {{ nwells }} wells, {{ sites_per_well }} sites per well. 
 # {{ nwells }}x{{ sites_per_well }} = {{ nsites }}
@@ -108,7 +108,7 @@ for i in "${objects[@]}"
 do
     echo $i
     # Take the header (first line) from the first batch
-    head -n1 ${outputroot}/batch_1_out/*_${i}.csv > ${resultsdir}/${resultsprefix}_Combined_${i}.csv
+    head -n1 ${outputroot}/batch_1_out/*_${i}.csv > ${resultsdir}/${resultsprefix}Combined_${i}.csv
     # Append all other lines except header from all files
-    tail -q -n+2 ${outputroot}/batch_*_out/*_${i}.csv >> ${resultsdir}/${resultsprefix}_Combined_${i}.csv
+    tail -q -n+2 ${outputroot}/batch_*_out/*_${i}.csv >> ${resultsdir}/${resultsprefix}Combined_${i}.csv
 done
