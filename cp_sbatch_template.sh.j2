@@ -103,6 +103,7 @@ done
 # Now wait for all the batches we started to finish
 wait
 
+# Combine measurements in .csv files
 objects=({{ objects }})
 for i in "${objects[@]}"
 do
@@ -112,3 +113,4 @@ do
     # Append all other lines except header from all files
     tail -q -n+2 ${outputroot}/batch_*_out/*_${i}.csv >> ${resultsdir}/${resultsprefix}Combined_${i}.csv
 done
+
