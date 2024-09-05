@@ -15,12 +15,15 @@ You need to do this only once. The environment is stored on the computer.
 - Open Start Menu / Anaconda / Anaconda prompt
 - Run the following commands:
     - conda env create -f C:\Users\username\Documents\napari.env
+	
+If you get a security prompt about "making changes on this computer" and asking for administrator details, answer no. The installation probably worked in any case.
 
 ## Activate environment and start Jupyter Notebook
 - Open Start Menu / Anaconda / Anaconda prompt
 - Run the following commands:
     - conda activate napari
 	- jupyter notebook
+	
 This should open a browser window with Jupyter Notebook page.
 
 ## Find your notebook and run it
