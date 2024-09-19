@@ -20,4 +20,5 @@ dependencies:
   - seaborn
   - pip:
     - aicsimageio
+    - aicspylibczi
     - napari
