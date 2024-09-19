@@ -1,0 +1,23 @@
+name: napari  # Name of your environment
+
+channels:
+  - defaults
+  - conda-forge  # Additional channel for some packages
+
+dependencies:
+  - dask
+  - ipykernel  # Required for using Conda environment in Jupyter notebooks
+  - jupyter
+  - matplotlib
+  - nb_conda_kernels  # Optional but useful for managing Conda kernels in Jupyter
+  - numpy
+  - pandas
+  - pip
+  - pyqt
+  - python=3.10  # or the version you prefer
+  - scikit-learn
+  - scipy
+  - seaborn
+  - pip:
+    - aicsimageio
+    - napari
