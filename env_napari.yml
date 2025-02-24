@@ -7,7 +7,7 @@ channels:
 dependencies:
   - dask
   - ipykernel  # Required for using Conda environment in Jupyter notebooks
-  - jupyter
+  - jupyterlab
   - matplotlib
   - nb_conda_kernels  # Optional but useful for managing Conda kernels in Jupyter
   - numpy
