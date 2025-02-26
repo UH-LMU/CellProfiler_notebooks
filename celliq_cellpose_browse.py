@@ -323,9 +323,10 @@ if __name__ == "__main__":
 
 
     @magicgui(
-        folder={"label": "Select Folder (images)", "mode": "d", "value": last_selected_folder},  # "d" stands for directory
+        folder={"label": "Select folder (images)", "mode": "d", "value": last_selected_folder},  # "d" stands for directory
+        auto_call=True,
     )
-    def select_folder(folder: Path):
+    def select_folder_images(folder: Path):
         if not folder or not folder.exists():
             print("Invalid folder")
             return
@@ -385,7 +386,8 @@ if __name__ == "__main__":
 
 
     @magicgui(
-        folder={"label": "Select Folder (labels)", "mode": "d", "value": last_selected_folder_labels},  # "d" stands for directory
+        folder={"label": "Select folder (labels)", "mode": "d", "value": last_selected_folder_labels},  # "d" stands for directory
+        auto_call=True,
     )
     def select_folder_labels(folder: Path):
         if not folder or not folder.exists():
@@ -442,8 +444,6 @@ if __name__ == "__main__":
             grouped_df = df.groupby(by=[PLATE, WELLSITE]).agg(list)
             index_map, index_map_reverse, final_dask_array_2d = create_dask_array(grouped_df)
             
-            # add empty images for missing labels
-
             viewer.add_labels(
                 final_dask_array_2d, 
                 name = 'cellpose',
@@ -459,10 +459,22 @@ if __name__ == "__main__":
         else:
             print('No label images found (stacks.empty)')
 
+    # Create a container widget to hold the folder selectors
+    class FolderSelectors(QWidget):
+        def __init__(self):
+            super().__init__()
+            layout = QVBoxLayout()
+            layout.addWidget(select_folder_images.native)
+            layout.addWidget(select_folder_labels.native)
+            layout.setContentsMargins(0, 0, 0, 0)  # Remove margins
+            layout.setSpacing(5)  # Adjust spacing
+            self.setLayout(layout)
 
-    viewer.window.add_dock_widget(select_folder)
-    viewer.window.add_dock_widget(select_folder_labels)
-    viewer.window.add_dock_widget(navigate_wellsites)
+    #viewer.window.add_dock_widget(select_folder_images, area='right')
+    #viewer.window.add_dock_widget(select_folder_labels, area='right')
+    viewer.window.add_dock_widget(FolderSelectors(), area='right')
+    viewer.window.add_dock_widget(navigate_wellsites, area='right')
+    
 
     napari.run()
 
