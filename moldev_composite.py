@@ -447,13 +447,13 @@ if __name__ == "__main__":
         current_index = tuple(viewer.dims.current_step)
 
         # Map index to image slice
-        img = img = final_dask_array_3d[current_index[:3]]  # Adjust indexing based on shape
+        img = final_dask_array_3d[current_index[:3]]  # Adjust indexing based on shape
         print(img.shape)
 
         plate, well, site = map_index_to_plate_well_site(current_index)
 
         # Generate a filename using index
-        filename = f"saved_view_{'_'.join([plate, well, str(site)])}.png"
+        filename = f"saved_view_{'_'.join([plate, well, str(site)])}.tif"
 
         # Choose save directory
         save_dir = Path.home() / "Napari_Saved_Views"
@@ -461,7 +461,7 @@ if __name__ == "__main__":
         save_path = save_dir / filename
 
         # Save image at full resolution
-        imsave(str(save_path), img.astype(np.uint8))  # Convert to 8-bit if needed
+        tifffile.imwrite(save_path, img, photometric='minisblack')
 
         print(f"Saved: {save_path}")
 
